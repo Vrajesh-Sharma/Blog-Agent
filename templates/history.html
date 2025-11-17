@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="history-section">
+    <h1>Past Blog Posts</h1>
+    <p>View and manage your previously generated blogs</p>
+
+    <div class="blogs-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Topic</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Words</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for blog in blogs %}
+                <tr>
+                    <td><strong>{{ blog.topic }}</strong></td>
+                    <td>{{ blog.date }}</td>
+                    <td><span class="badge badge-{{ blog.status }}">{{ blog.status }}</span></td>
+                    <td>{{ blog.word_count }}</td>
+                    <td>
+                        <button class="btn btn-small">View</button>
+                        <button class="btn btn-small">Edit</button>
+                        <button class="btn btn-small">Delete</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

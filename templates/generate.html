@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="generate-section">
+    <h1>Generate Blog Post</h1>
+
+    <div class="generate-container">
+        <!-- Left: Input Panel -->
+        <div class="input-panel">
+            <h2>Blog Details</h2>
+            
+            <form id="generateForm">
+                <div class="form-group">
+                    <label for="topic">Blog Topic *</label>
+                    <input 
+                        type="text" 
+                        id="topic" 
+                        name="topic"
+                        placeholder="e.g., Getting Started with AI Agents"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="tone">Tone</label>
+                    <select id="tone" name="tone">
+                        <option value="professional">Professional</option>
+                        <option value="casual">Casual</option>
+                        <option value="technical">Technical</option>
+                        <option value="storytelling">Storytelling</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="length">Target Length</label>
+                    <select id="length" name="length">
+                        <option value="500-1000">Short (500-1000 words)</option>
+                        <option value="1500-2000" selected>Medium (1500-2000 words)</option>
+                        <option value="2500-3500">Long (2500-3500 words)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="audience">Target Audience</label>
+                    <select id="audience" name="audience">
+                        <option value="developers">Developers</option>
+                        <option value="beginners">Beginners</option>
+                        <option value="general">General</option>
+                        <option value="experts">Experts</option>
+                    </select>
+                </div>
+
+                <div class="form-group checkbox">
+                    <input 
+                        type="checkbox" 
+                        id="examples" 
+                        name="examples"
+                        checked
+                    >
+                    <label for="examples">Include Code Examples</label>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="generateBtn">
+                    Generate Blog
+                </button>
+                <button type="button" class="btn btn-secondary" id="resetBtn">
+                    Clear
+                </button>
+            </form>
+        </div>
+
+        <!-- Right: Progress Panel -->
+        <div class="output-panel">
+            <h2>Generation Progress</h2>
+
+            <div id="progressContainer" style="display: none;">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <p id="progressText">Initializing...</p>
+
+                <div class="stages">
+                    <div class="stage" id="stage-research">
+                        <span class="stage-icon">🔍</span>
+                        <span>Research</span>
+                    </div>
+                    <div class="stage" id="stage-outline">
+                        <span class="stage-icon">📋</span>
+                        <span>Outline</span>
+                    </div>
+                    <div class="stage" id="stage-writing">
+                        <span class="stage-icon">✍️</span>
+                        <span>Writing</span>
+                    </div>
+                    <div class="stage" id="stage-editing">
+                        <span class="stage-icon">✨</span>
+                        <span>Editing</span>
+                    </div>
+                </div>
+
+                <div class="content-preview" id="contentPreview"></div>
+
+                <div class="button-group" id="completeButtonsContainer" style="display: none;">
+                    <button class="btn btn-success" id="copyBtn">📋 Copy to Clipboard</button>
+                    <button class="btn btn-success" id="downloadBtn">⬇️ Download</button>
+                </div>
+            </div>
+
+            <div id="initialState" class="initial-state">
+                <p>Fill in the blog details and click "Generate Blog" to start</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const generateForm = document.getElementById('generateForm');
+    const generateBtn = document.getElementById('generateBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const progressContainer = document.getElementById('progressContainer');
+    const initialState = document.getElementById('initialState');
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+    const contentPreview = document.getElementById('contentPreview');
+    const completeButtonsContainer = document.getElementById('completeButtonsContainer');
+    const copyBtn = document.getElementById('copyBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+
+    let currentSessionId = null;
+    let finalBlogContent = '';
+
+    generateForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const topic = document.getElementById('topic').value;
+        const preferences = {
+            tone: document.getElementById('tone').value,
+            length: document.getElementById('length').value,
+            audience: document.getElementById('audience').value,
+            include_examples: document.getElementById('examples').checked
+        };
+
+        // Show progress container
+        initialState.style.display = 'none';
+        progressContainer.style.display = 'block';
+        completeButtonsContainer.style.display = 'none';
+        generateBtn.disabled = true;
+
+        try {
+            const response = await fetch('/api/generate-blog', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ topic, preferences })
+            });
+
+            // Handle streaming response
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const text = decoder.decode(value);
+                const lines = text.split('\n').filter(line => line.trim());
+
+                for (const line of lines) {
+                    try {
+                        const event = JSON.parse(line);
+                        handleStreamEvent(event);
+                    } catch (e) {
+                        console.error('Parse error:', e);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            progressText.textContent = 'Error occurred during generation';
+        } finally {
+            generateBtn.disabled = false;
+        }
+    });
+
+    function handleStreamEvent(event) {
+        switch (event.event) {
+            case 'stage_start':
+                updateStageStatus(event.stage, 'active');
+                progressText.textContent = event.message;
+                break;
+
+            case 'research_complete':
+                updateStageStatus('research', 'complete');
+                progressFill.style.width = event.progress + '%';
+                break;
+
+            case 'outline_complete':
+                updateStageStatus('outline', 'complete');
+                progressFill.style.width = event.progress + '%';
+                break;
+
+            case 'writing_complete':
+                updateStageStatus('writing', 'complete');
+                progressFill.style.width = event.progress + '%';
+                contentPreview.innerHTML = '<h3>Draft Preview:</h3><p>' + 
+                    event.data.content.substring(0, 300) + '...</p>';
+                break;
+
+            case 'complete':
+                updateStageStatus('editing', 'complete');
+                progressFill.style.width = '100%';
+                progressText.textContent = 'Blog generation complete! ✨';
+                currentSessionId = event.session_id;
+                finalBlogContent = event.final_blog;
+                
+                contentPreview.innerHTML = `
+                    <h3>✅ Blog Complete!</h3>
+                    <p><strong>Word Count:</strong> ${event.metrics.word_count}</p>
+                    <p><strong>Quality Score:</strong> ${event.metrics.quality_score}/10</p>
+                    <p><strong>Readability:</strong> ${event.metrics.readability_score}/10</p>
+                `;
+                completeButtonsContainer.style.display = 'flex';
+                break;
+        }
+    }
+
+    function updateStageStatus(stage, status) {
+        const stageEl = document.getElementById(`stage-${stage}`);
+        if (stageEl) {
+            stageEl.classList.remove('active', 'complete');
+            stageEl.classList.add(status);
+        }
+    }
+
+    copyBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(finalBlogContent);
+        alert('Blog copied to clipboard!');
+    });
+
+    downloadBtn.addEventListener('click', () => {
+        const element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + 
+            encodeURIComponent(finalBlogContent));
+        element.setAttribute('download', 'blog-post.md');
+        element.style.display = 'none';
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+    });
+
+    resetBtn.addEventListener('click', () => {
+        generateForm.reset();
+        initialState.style.display = 'block';
+        progressContainer.style.display = 'none';
+        progressFill.style.width = '0%';
+        contentPreview.innerHTML = '';
+    });
+</script>
+{% endblock %}

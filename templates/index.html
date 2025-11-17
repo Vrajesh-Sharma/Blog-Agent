@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero">
+    <h1>AI-Powered Blog Writing Agent</h1>
+    <p>Transform your ideas into professional blog posts in minutes</p>
+    
+    <div class="features">
+        <div class="feature">
+            <h3>🔍 Research</h3>
+            <p>Automatically gathers information from reliable sources</p>
+        </div>
+        <div class="feature">
+            <h3>📋 Organize</h3>
+            <p>Creates structured outlines for better readability</p>
+        </div>
+        <div class="feature">
+            <h3>✍️ Write</h3>
+            <p>Generates engaging content tailored to your style</p>
+        </div>
+        <div class="feature">
+            <h3>✨ Polish</h3>
+            <p>Refines and optimizes for maximum impact</p>
+        </div>
+    </div>
+
+    <a href="/generate" class="btn btn-primary">Start Writing</a>
+</section>
+
+<section class="stats">
+    <h2>Your Writing Stats</h2>
+    <div class="stat-cards">
+        <div class="stat-card">
+            <h4>2</h4>
+            <p>Blogs Generated</p>
+        </div>
+        <div class="stat-card">
+            <h4>3,950</h4>
+            <p>Words Written</p>
+        </div>
+        <div class="stat-card">
+            <h4>~8.5 hrs</h4>
+            <p>Time Saved</p>
+        </div>
+    </div>
+</section>
+{% endblock %}
