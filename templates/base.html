@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Blog AI Agent{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <nav class="navbar">
+    <nav class="navbar glassnav">
         <div class="container">
-            <a href="/" class="logo">📝 Blog Agent</a>
+            <a href="/" class="logo">Blog Agent</a>
             <ul class="nav-menu">
                 <li><a href="/">Home</a></li>
                 <li><a href="/generate">Generate</a></li>
@@ -17,15 +18,13 @@
             </ul>
         </div>
     </nav>
-
+    <div class="background-gradient"></div>
     <main class="container">
         {% block content %}{% endblock %}
     </main>
-
-    <footer>
-        <p>&copy; 2025 AI-Powered Blog Writing Agent. Built with ❤️ and Gemini.</p>
+    <footer class="footer glassnav">
+        <p>&copy; 2025 AI-Powered Blog Writing Agent. Built with <span style="color:#f4d35e;">&#10084;</span> and Gemini.</p>
     </footer>
-
     {% block scripts %}{% endblock %}
 </body>
 </html>

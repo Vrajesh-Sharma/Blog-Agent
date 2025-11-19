@@ -1,6 +1,10 @@
-Flask==2.3.3
+# Minimal setup for local development
+Flask==3.0.0
 Flask-CORS==4.0.0
 python-dotenv==1.0.0
-google-generativeai==0.3.0
-requests==2.31.0
-beautifulsoup4==4.12.2
+
+# Google ADK (includes all necessary dependencies)
+google-adk>=0.1.0
+
+# Google Generative AI (for Gemini API)
+google-generativeai>=0.3.0
