@@ -188,7 +188,7 @@ def generate_blog():
                 'stages_completed': sessions[session_id]['stages'],
                 'duration_seconds': duration
             }
-            yield sse_packet({'event': 'complete', 'stage': 'editing', 'session_id': session_id, 'status': 'complete', 'final_blog_preview': str(editing_result)[:2000], 'progress': 100, 'metrics': metrics}, event='complete')
+            yield sse_packet({'event': 'complete', 'stage': 'editing', 'session_id': session_id, 'status': 'complete', 'final_blog_preview': str(editing_result), 'progress': 100, 'metrics': metrics}, event='complete')
         except Exception as e:
             print(f"💥 [Coordinator] Error in Editing: {e}")
             yield sse_packet({'event': 'error', 'stage': 'editing', 'error': str(e)}, event='error')
