@@ -1,11 +1,12 @@
 import os, uuid, json
-from datetime import datetime
+from datetime import datetime, timezone # <--- Import timezone
 from threading import Lock
+import time
 
 from flask import Flask, render_template, request, jsonify, Response
 from flask_cors import CORS
 from dotenv import load_dotenv
-import google.generativeai as genai # Import official SDK
+import google.generativeai as genai
 
 # --- Modular imports ---
 from agents.research_agent import create_research_agent
@@ -13,25 +14,19 @@ from agents.outline_agent import create_outline_agent
 from agents.writing_agent import create_writing_agent
 from agents.editing_agent import create_editing_agent
 
-# (Tool imports are now handled inside the agent files, or passed here if you prefer)
 from services.session_service import SessionManager
 from services.memory_service import MemoryManager
 
 load_dotenv()
 
-# --- Configuration ---
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-flash") # Use a standard model name
+GEMINI_MODEL = os.getenv("GEMINI_MODEL")
 api_key = os.getenv("GOOGLE_API_KEY")
-if not api_key:
-    raise ValueError("GOOGLE_API_KEY not found in environment variables")
-
 genai.configure(api_key=api_key)
 
 app = Flask(__name__)
 CORS(app)
 app.config['JSON_SORT_KEYS'] = False
 
-# --- Services ---
 session_manager = SessionManager()
 memory_manager = MemoryManager()
 sessions = {}
@@ -44,24 +39,20 @@ user_preferences = {
     "include_examples": True
 }
 
-# --- Agent Initialization ---
-# Note: We don't need a global tool_registry anymore. 
-# Tools are passed specifically to the agents that need them.
-
+# Initialize Agents
+print("\n--- [System] Booting Agents... ---")
 research_agent = create_research_agent(GEMINI_MODEL)
 outline_agent = create_outline_agent(GEMINI_MODEL)
 writing_agent = create_writing_agent(GEMINI_MODEL)
 editing_agent = create_editing_agent(GEMINI_MODEL)
+print("--- [System] Agents Ready ---\n")
 
-# Helper for SSE
 def sse_packet(payload: dict, event: str = None):
     s = ""
     if event:
         s += f"event: {event}\n"
     s += f"data: {json.dumps(payload, ensure_ascii=False)}\n\n"
     return s
-
-# --- Routes (Keep your existing routes mostly as is) ---
 
 @app.route('/')
 def index():
@@ -85,13 +76,15 @@ def generate_blog():
     preferences = data.get('preferences', user_preferences)
 
     session_id = str(uuid.uuid4())
+    print(f"\n🆕 [Coordinator] New Session Created: {session_id} | Topic: {topic}")
+
     user_id = f"user_{session_id[:8]}"
     session_obj = {
         'id': session_id,
         'topic': topic,
         'preferences': preferences,
         'status': 'in_progress',
-        'created_at': datetime.utcnow().isoformat(),
+        'created_at': datetime.now(timezone.utc).isoformat(), # <--- Fixed Deprecation
         'trace_id': f"trace_{session_id}",
         'stages': [],
         'research': None,
@@ -106,10 +99,10 @@ def generate_blog():
     memory_ref = memory_manager.get_memory(session_id)
 
     def generate_stream():
-        # Stage 1: Research
+        # --- Stage 1: Research ---
+        print(f"🚀 [Coordinator] Starting Stage 1: RESEARCH")
         yield sse_packet({'event': 'stage_start', 'stage': 'research', 'message': 'Researching...'}, event='stage_start')
         try:
-            # .act() now accepts the dict and creates the prompt string internally
             research_result = research_agent.act({
                 "topic": topic,
                 "audience": preferences.get("audience")
@@ -117,15 +110,19 @@ def generate_blog():
             
             sessions[session_id]['research'] = research_result
             sessions[session_id]['stages'].append('research')
+            print(f"🏁 [Coordinator] Research Complete.")
             yield sse_packet({'event': 'research_complete', 'stage': 'research', 'data': research_result, 'progress': 25}, event='research_complete')
+            print(f"    ⏳ [Coordinator] Cooling down (5s) to avoid Rate Limit...")
+            time.sleep(5)  # Cooldown to avoid rate limits
         except Exception as e:
+            print(f"💥 [Coordinator] Error in Research: {e}")
             yield sse_packet({'event': 'error', 'stage': 'research', 'error': str(e)}, event='error')
-            return # Stop stream on error
+            return
 
-        # Stage 2: Outline
+        # --- Stage 2: Outline ---
+        print(f"🚀 [Coordinator] Starting Stage 2: OUTLINE")
         yield sse_packet({'event': 'stage_start', 'stage': 'outline', 'message': 'Outlining...'}, event='stage_start')
         try:
-            # research_result should be a dict now because of response_mime_type="application/json"
             key_points = sessions[session_id]['research'].get("key_points", []) if isinstance(sessions[session_id]['research'], dict) else []
             
             outline_result = outline_agent.act({
@@ -136,12 +133,17 @@ def generate_blog():
             
             sessions[session_id]['outline'] = outline_result
             sessions[session_id]['stages'].append('outline')
+            print(f"🏁 [Coordinator] Outline Complete.")
             yield sse_packet({'event': 'outline_complete', 'stage': 'outline', 'data': outline_result, 'progress': 50}, event='outline_complete')
+            print(f"    ⏳ [Coordinator] Cooling down (5s) to avoid Rate Limit...")
+            time.sleep(5)
         except Exception as e:
+            print(f"💥 [Coordinator] Error in Outline: {e}")
             yield sse_packet({'event': 'error', 'stage': 'outline', 'error': str(e)}, event='error')
             return
 
-        # Stage 3: Writing
+        # --- Stage 3: Writing ---
+        print(f"🚀 [Coordinator] Starting Stage 3: WRITING")
         yield sse_packet({'event': 'stage_start', 'stage': 'writing', 'message': 'Writing...'}, event='stage_start')
         try:
             writing_result = writing_agent.act({
@@ -152,12 +154,17 @@ def generate_blog():
             
             sessions[session_id]['draft'] = writing_result
             sessions[session_id]['stages'].append('writing')
+            print(f"🏁 [Coordinator] Writing Complete.")
             yield sse_packet({'event': 'writing_complete', 'stage': 'writing', 'data': {'content_preview': str(writing_result)[:800]}, 'progress': 75}, event='writing_complete')
+            print(f"    ⏳ [Coordinator] Cooling down (5s) to avoid Rate Limit...")
+            time.sleep(5)
         except Exception as e:
+            print(f"💥 [Coordinator] Error in Writing: {e}")
             yield sse_packet({'event': 'error', 'stage': 'writing', 'error': str(e)}, event='error')
             return
 
-        # Stage 4: Editing
+        # --- Stage 4: Editing ---
+        print(f"🚀 [Coordinator] Starting Stage 4: EDITING")
         yield sse_packet({'event': 'stage_start', 'stage': 'editing', 'message': 'Editing...'}, event='stage_start')
         try:
             editing_result = editing_agent.act({
@@ -169,13 +176,21 @@ def generate_blog():
             sessions[session_id]['status'] = 'complete'
             sessions[session_id]['stages'].append('editing')
             
+            # Calculate duration
+            start_time = datetime.fromisoformat(sessions[session_id]['created_at'])
+            end_time = datetime.now(timezone.utc)
+            duration = (end_time - start_time).total_seconds()
+            
+            print(f"🏁 [Coordinator] Session Finished in {duration:.2f}s.")
+            
             metrics = {
                 'word_count': len(str(editing_result).split()),
                 'stages_completed': sessions[session_id]['stages'],
-                'duration_seconds': (datetime.utcnow() - datetime.fromisoformat(sessions[session_id]['created_at'])).total_seconds()
+                'duration_seconds': duration
             }
             yield sse_packet({'event': 'complete', 'stage': 'editing', 'session_id': session_id, 'status': 'complete', 'final_blog_preview': str(editing_result)[:2000], 'progress': 100, 'metrics': metrics}, event='complete')
         except Exception as e:
+            print(f"💥 [Coordinator] Error in Editing: {e}")
             yield sse_packet({'event': 'error', 'stage': 'editing', 'error': str(e)}, event='error')
 
     return Response(generate_stream(), mimetype='text/event-stream')
