@@ -1,262 +1,252 @@
 {% extends "base.html" %}
 
 {% block content %}
-<section class="generate-section">
-    <h1>Generate Blog Post</h1>
+<div class="max-w-6xl mx-auto px-4 py-10">
+    
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <div class="lg:col-span-4 space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-indigo-600"></i> Configuration
+                </h2>
+                
+                <form id="generateForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Topic</label>
+                        <input type="text" id="topic" required
+                            class="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+                            placeholder="e.g. Rust vs Go for Web Dev">
+                    </div>
 
-    <div class="generate-container">
-        <!-- Left: Input Panel -->
-        <div class="input-panel">
-            <h2>Blog Details</h2>
-            
-            <form id="generateForm">
-                <div class="form-group">
-                    <label for="topic">Blog Topic *</label>
-                    <input 
-                        type="text" 
-                        id="topic" 
-                        name="topic"
-                        placeholder="e.g., Getting Started with AI Agents"
-                        required
-                    >
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Tone</label>
+                            <select id="tone" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm">
+                                <option value="professional">Professional</option>
+                                <option value="technical">Technical</option>
+                                <option value="casual">Casual</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Audience</label>
+                            <select id="audience" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm">
+                                <option value="developers">Developers</option>
+                                <option value="beginners">Beginners</option>
+                                <option value="managers">Managers</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="generateBtn" 
+                        class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition shadow-md flex justify-center items-center gap-2">
+                        <span>Start Agent Team</span>
+                        <i class="fa-solid fa-play"></i>
+                    </button>
+                </form>
+            </div>
+
+            <div class="bg-slate-900 rounded-2xl p-4 shadow-lg border border-slate-700 h-64 flex flex-col">
+                <div class="text-xs text-slate-500 font-bold uppercase tracking-wider mb-2 border-b border-slate-700 pb-2">System Logs</div>
+                <div id="console" class="flex-grow overflow-y-auto font-mono text-xs space-y-1 text-slate-300">
+                    <div class="text-emerald-500">> System ready.</div>
                 </div>
-
-                <div class="form-group">
-                    <label for="tone">Tone</label>
-                    <select id="tone" name="tone">
-                        <option value="professional">Professional</option>
-                        <option value="casual">Casual</option>
-                        <option value="technical">Technical</option>
-                        <option value="storytelling">Storytelling</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="length">Target Length</label>
-                    <select id="length" name="length">
-                        <option value="500-1000">Short (500-1000 words)</option>
-                        <option value="1500-2000" selected>Medium (1500-2000 words)</option>
-                        <option value="2500-3500">Long (2500-3500 words)</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="audience">Target Audience</label>
-                    <select id="audience" name="audience">
-                        <option value="developers">Developers</option>
-                        <option value="beginners">Beginners</option>
-                        <option value="general">General</option>
-                        <option value="experts">Experts</option>
-                    </select>
-                </div>
-
-                <div class="form-group checkbox">
-                    <input 
-                        type="checkbox" 
-                        id="examples" 
-                        name="examples"
-                        checked
-                    >
-                    <label for="examples">Include Code Examples</label>
-                </div>
-
-                <button type="submit" class="btn btn-primary" id="generateBtn">
-                    Generate Blog
-                </button>
-                <button type="button" class="btn btn-secondary" id="resetBtn">
-                    Clear
-                </button>
-            </form>
+            </div>
         </div>
 
-        <!-- Right: Progress Panel -->
-        <div class="output-panel">
-            <h2>Generation Progress</h2>
-
-            <div id="progressContainer" style="display: none;">
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
-                </div>
-                <p id="progressText">Initializing...</p>
-
-                <div class="stages">
-                    <div class="stage" id="stage-research">
-                        <span class="stage-icon">🔍</span>
-                        <span>Research</span>
-                    </div>
-                    <div class="stage" id="stage-outline">
-                        <span class="stage-icon">📋</span>
-                        <span>Outline</span>
-                    </div>
-                    <div class="stage" id="stage-writing">
-                        <span class="stage-icon">✍️</span>
-                        <span>Writing</span>
-                    </div>
-                    <div class="stage" id="stage-editing">
-                        <span class="stage-icon">✨</span>
-                        <span>Editing</span>
+        <div class="lg:col-span-8 space-y-6">
+            
+            <div class="grid grid-cols-4 gap-3">
+                <div id="card-research" class="bg-white p-3 rounded-xl border border-slate-200 opacity-50 transition-all duration-300">
+                    <div class="text-xs text-slate-400 uppercase font-bold mb-1">Step 1</div>
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-magnifying-glass text-blue-500"></i>
+                        <span class="font-bold text-slate-700 text-sm">Research</span>
                     </div>
                 </div>
-
-                <div class="content-preview" id="contentPreview"></div>
-
-                <div class="button-group" id="completeButtonsContainer" style="display: none;">
-                    <button class="btn btn-success" id="copyBtn">📋 Copy to Clipboard</button>
-                    <button class="btn btn-success" id="downloadBtn">⬇️ Download</button>
+                <div id="card-outline" class="bg-white p-3 rounded-xl border border-slate-200 opacity-50 transition-all duration-300">
+                    <div class="text-xs text-slate-400 uppercase font-bold mb-1">Step 2</div>
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-purple-500"></i>
+                        <span class="font-bold text-slate-700 text-sm">Outline</span>
+                    </div>
+                </div>
+                <div id="card-writing" class="bg-white p-3 rounded-xl border border-slate-200 opacity-50 transition-all duration-300">
+                    <div class="text-xs text-slate-400 uppercase font-bold mb-1">Step 3</div>
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-pen-nib text-amber-500"></i>
+                        <span class="font-bold text-slate-700 text-sm">Drafting</span>
+                    </div>
+                </div>
+                <div id="card-editing" class="bg-white p-3 rounded-xl border border-slate-200 opacity-50 transition-all duration-300">
+                    <div class="text-xs text-slate-400 uppercase font-bold mb-1">Step 4</div>
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles text-emerald-500"></i>
+                        <span class="font-bold text-slate-700 text-sm">Editing</span>
+                    </div>
                 </div>
             </div>
 
-            <div id="initialState" class="initial-state">
-                <p>Fill in the blog details and click "Generate Blog" to start</p>
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 min-h-[500px] p-8 relative">
+                
+                <div id="initialState" class="absolute inset-0 flex flex-col items-center justify-center text-slate-400">
+                    <i class="fa-solid fa-robot text-4xl mb-4 opacity-20"></i>
+                    <p>Enter a topic to wake the agents</p>
+                </div>
+
+                <div id="resultArea" class="hidden">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-4 mb-6">
+                        <h2 class="text-2xl font-bold text-slate-800">Generated Content</h2>
+                        <button onclick="copyContent()" class="text-indigo-600 hover:bg-indigo-50 px-3 py-1 rounded-lg text-sm font-medium transition">
+                            <i class="fa-regular fa-copy mr-1"></i> Copy
+                        </button>
+                    </div>
+                    <div id="blogContent" class="prose max-w-none"></div>
+                </div>
+
             </div>
         </div>
     </div>
-</section>
+</div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-    const generateForm = document.getElementById('generateForm');
+    const consoleDiv = document.getElementById('console');
     const generateBtn = document.getElementById('generateBtn');
-    const resetBtn = document.getElementById('resetBtn');
-    const progressContainer = document.getElementById('progressContainer');
-    const initialState = document.getElementById('initialState');
-    const progressFill = document.getElementById('progressFill');
-    const progressText = document.getElementById('progressText');
-    const contentPreview = document.getElementById('contentPreview');
-    const completeButtonsContainer = document.getElementById('completeButtonsContainer');
-    const copyBtn = document.getElementById('copyBtn');
-    const downloadBtn = document.getElementById('downloadBtn');
 
-    let currentSessionId = null;
-    let finalBlogContent = '';
+    // Helper to log to the UI console
+    function log(msg, type='info') {
+        const div = document.createElement('div');
+        const time = new Date().toLocaleTimeString().split(' ')[0];
+        
+        if (type === 'error') div.className = 'text-red-400';
+        else if (type === 'success') div.className = 'text-emerald-400';
+        else if (type === 'system') div.className = 'text-slate-400 italic';
+        
+        div.innerHTML = `<span class="opacity-30 mr-2">[${time}]</span> ${msg}`;
+        consoleDiv.appendChild(div);
+        consoleDiv.scrollTop = consoleDiv.scrollHeight;
+    }
 
-    generateForm.addEventListener('submit', async (e) => {
+    // Helper to update agent cards
+    function updateCard(stage, status) {
+        const card = document.getElementById(`card-${stage}`);
+        if (!card) return;
+
+        if (status === 'active') {
+            card.classList.remove('opacity-50');
+            card.classList.add('ring-2', 'ring-indigo-500', 'shadow-md', 'scale-105');
+            card.querySelector('.text-slate-400').innerText = 'Working...';
+        } else if (status === 'complete') {
+            card.classList.remove('ring-2', 'ring-indigo-500', 'shadow-md', 'scale-105');
+            card.classList.add('bg-emerald-50', 'border-emerald-200');
+            card.querySelector('.text-slate-400').innerText = 'Done';
+            card.querySelector('.text-slate-400').classList.add('text-emerald-600');
+        }
+    }
+
+    document.getElementById('generateForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         
         const topic = document.getElementById('topic').value;
-        const preferences = {
-            tone: document.getElementById('tone').value,
-            length: document.getElementById('length').value,
-            audience: document.getElementById('audience').value,
-            include_examples: document.getElementById('examples').checked
-        };
+        const tone = document.getElementById('tone').value;
+        const audience = document.getElementById('audience').value;
 
-        // Show progress container
-        initialState.style.display = 'none';
-        progressContainer.style.display = 'block';
-        completeButtonsContainer.style.display = 'none';
+        // Reset UI
+        document.getElementById('initialState').style.display = 'none';
+        document.getElementById('resultArea').classList.add('hidden');
         generateBtn.disabled = true;
+        generateBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Agents Working...';
+        log(`Starting session for topic: "${topic}"`, 'system');
 
         try {
             const response = await fetch('/api/generate-blog', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ topic, preferences })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    topic: topic,
+                    preferences: { tone, audience }
+                })
             });
 
-            // Handle streaming response
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
 
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
-
-                const text = decoder.decode(value);
-                const lines = text.split('\n').filter(line => line.trim());
-
+                
+                const chunk = decoder.decode(value);
+                const lines = chunk.split('\n');
+                
                 for (const line of lines) {
-                    try {
-                        const event = JSON.parse(line);
-                        handleStreamEvent(event);
-                    } catch (e) {
-                        console.error('Parse error:', e);
+                    if (line.startsWith('data: ')) {
+                        try {
+                            const data = JSON.parse(line.slice(6));
+                            handleEvent(data);
+                        } catch (e) { console.log('Parse error', e); }
                     }
                 }
             }
-        } catch (error) {
-            console.error('Error:', error);
-            progressText.textContent = 'Error occurred during generation';
-        } finally {
+        } catch (err) {
+            log(`Connection Error: ${err}`, 'error');
             generateBtn.disabled = false;
+            generateBtn.innerText = 'Start Agent Team';
         }
     });
 
-    function handleStreamEvent(event) {
-        switch (event.event) {
+    function handleEvent(data) {
+        switch(data.event) {
             case 'stage_start':
-                updateStageStatus(event.stage, 'active');
-                progressText.textContent = event.message;
+                log(`> Agent Activated: ${data.stage.toUpperCase()}`);
+                updateCard(data.stage, 'active');
                 break;
-
+            
             case 'research_complete':
-                updateStageStatus('research', 'complete');
-                progressFill.style.width = event.progress + '%';
+                log(`Research found ${data.data.key_points?.length || 0} key points.`, 'success');
+                updateCard('research', 'complete');
                 break;
 
             case 'outline_complete':
-                updateStageStatus('outline', 'complete');
-                progressFill.style.width = event.progress + '%';
+                log(`Outline generated: "${data.data.outline?.title || 'Untitled'}"`, 'success');
+                updateCard('outline', 'complete');
                 break;
 
             case 'writing_complete':
-                updateStageStatus('writing', 'complete');
-                progressFill.style.width = event.progress + '%';
-                contentPreview.innerHTML = '<h3>Draft Preview:</h3><p>' + 
-                    event.data.content.substring(0, 300) + '...</p>';
+                log(`Drafting complete. Sending to editor...`, 'success');
+                updateCard('writing', 'complete');
                 break;
 
             case 'complete':
-                updateStageStatus('editing', 'complete');
-                progressFill.style.width = '100%';
-                progressText.textContent = 'Blog generation complete! ✨';
-                currentSessionId = event.session_id;
-                finalBlogContent = event.final_blog;
+                log(`🎉 Workflow Complete! Word count: ${data.metrics.word_count}`, 'success');
+                updateCard('editing', 'complete');
                 
-                contentPreview.innerHTML = `
-                    <h3>✅ Blog Complete!</h3>
-                    <p><strong>Word Count:</strong> ${event.metrics.word_count}</p>
-                    <p><strong>Quality Score:</strong> ${event.metrics.quality_score}/10</p>
-                    <p><strong>Readability:</strong> ${event.metrics.readability_score}/10</p>
-                `;
-                completeButtonsContainer.style.display = 'flex';
+                // Render Result
+                const rawText = typeof data.final_blog_preview === 'string' 
+                    ? data.final_blog_preview 
+                    : JSON.stringify(data.final_blog_preview);
+                
+                // Clean markdown format
+                const cleanText = rawText.replace(/^```markdown\n/, '').replace(/```$/, '');
+                
+                document.getElementById('blogContent').innerHTML = marked.parse(cleanText);
+                document.getElementById('resultArea').classList.remove('hidden');
+                
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = 'Start New Session';
+                break;
+                
+            case 'error':
+                log(`Error: ${data.error}`, 'error');
                 break;
         }
     }
 
-    function updateStageStatus(stage, status) {
-        const stageEl = document.getElementById(`stage-${stage}`);
-        if (stageEl) {
-            stageEl.classList.remove('active', 'complete');
-            stageEl.classList.add(status);
-        }
+    function copyContent() {
+        const text = document.getElementById('blogContent').innerText;
+        navigator.clipboard.writeText(text);
+        alert('Copied to clipboard!');
     }
-
-    copyBtn.addEventListener('click', () => {
-        navigator.clipboard.writeText(finalBlogContent);
-        alert('Blog copied to clipboard!');
-    });
-
-    downloadBtn.addEventListener('click', () => {
-        const element = document.createElement('a');
-        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + 
-            encodeURIComponent(finalBlogContent));
-        element.setAttribute('download', 'blog-post.md');
-        element.style.display = 'none';
-        document.body.appendChild(element);
-        element.click();
-        document.body.removeChild(element);
-    });
-
-    resetBtn.addEventListener('click', () => {
-        generateForm.reset();
-        initialState.style.display = 'block';
-        progressContainer.style.display = 'none';
-        progressFill.style.width = '0%';
-        contentPreview.innerHTML = '';
-    });
 </script>
 {% endblock %}

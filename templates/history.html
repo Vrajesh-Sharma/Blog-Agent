@@ -1,37 +1,73 @@
 {% extends "base.html" %}
 
 {% block content %}
-<section class="history-section">
-    <h1>Past Blog Posts</h1>
-    <p>View and manage your previously generated blogs</p>
+<div class="max-w-6xl mx-auto px-4 py-10">
+    
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-slate-800">History</h1>
+            <p class="text-slate-500">Past generations and drafts</p>
+        </div>
+        <a href="/generate" class="text-indigo-600 font-medium hover:text-indigo-800">
+            + New Generation
+        </a>
+    </div>
 
-    <div class="blogs-table">
-        <table>
-            <thead>
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <table class="w-full text-left">
+            <thead class="bg-slate-50 border-b border-slate-200">
                 <tr>
-                    <th>Topic</th>
-                    <th>Date</th>
-                    <th>Status</th>
-                    <th>Words</th>
-                    <th>Actions</th>
+                    <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Topic</th>
+                    <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Date</th>
+                    <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Stats</th>
+                    <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Actions</th>
                 </tr>
             </thead>
-            <tbody>
-                {% for blog in blogs %}
-                <tr>
-                    <td><strong>{{ blog.topic }}</strong></td>
-                    <td>{{ blog.date }}</td>
-                    <td><span class="badge badge-{{ blog.status }}">{{ blog.status }}</span></td>
-                    <td>{{ blog.word_count }}</td>
-                    <td>
-                        <button class="btn btn-small">View</button>
-                        <button class="btn btn-small">Edit</button>
-                        <button class="btn btn-small">Delete</button>
-                    </td>
-                </tr>
-                {% endfor %}
+            <tbody class="divide-y divide-slate-100">
+                {% if blogs %}
+                    {% for blog in blogs %}
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="px-6 py-4">
+                            <div class="font-bold text-slate-800">{{ blog.topic }}</div>
+                            <div class="text-xs text-slate-400">{{ blog.id[:8] }}...</div>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-slate-600">
+                            {{ blog.created_at[:10] }}
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if blog.status == 'complete' %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                                    Complete
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                                    {{ blog.status }}
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-sm text-slate-500">
+                            {% if blog.final_blog %}
+                                {{ blog.final_blog|length // 5 }} words
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <button class="text-indigo-600 hover:text-indigo-900 font-medium text-sm">View</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center text-slate-400">
+                            <i class="fa-regular fa-folder-open text-4xl mb-3 opacity-50"></i>
+                            <p>No history found. Start generating!</p>
+                        </td>
+                    </tr>
+                {% endif %}
             </tbody>
         </table>
     </div>
-</section>
+</div>
 {% endblock %}

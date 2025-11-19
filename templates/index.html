@@ -1,47 +1,85 @@
 {% extends "base.html" %}
 
 {% block content %}
-<section class="hero">
-    <h1>AI-Powered Blog Writing Agent</h1>
-    <p>Transform your ideas into professional blog posts in minutes</p>
-    
-    <div class="features">
-        <div class="feature">
-            <h3>Research</h3>
-            <p>Automatically gathers information from reliable sources</p>
-        </div>
-        <div class="feature">
-            <h3>Organize</h3>
-            <p>Creates structured outlines for better readability</p>
-        </div>
-        <div class="feature">
-            <h3>Write</h3>
-            <p>Generates engaging content tailored to your style</p>
-        </div>
-        <div class="feature">
-            <h3>Polish</h3>
-            <p>Refines and optimizes for maximum impact</p>
+<div class="relative overflow-hidden">
+    <div class="max-w-6xl mx-auto px-4 py-20 sm:px-6 lg:px-8 text-center relative z-10">
+        <span class="inline-block py-1 px-3 rounded-full bg-indigo-50 text-indigo-600 text-sm font-semibold mb-6 border border-indigo-100">
+            🚀 Powered by Gemini 2.0 Flash
+        </span>
+        <h1 class="text-5xl md:text-6xl font-extrabold text-slate-900 tracking-tight mb-6">
+            Your Personal <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">AI Editorial Team</span>
+        </h1>
+        <p class="text-xl text-slate-600 max-w-2xl mx-auto mb-10">
+            Don't just generate text. Orchestrate a team of autonomous agents to research, outline, write, and edit professional technical blogs.
+        </p>
+        
+        <div class="flex justify-center gap-4">
+            <a href="/generate" class="px-8 py-4 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200 flex items-center gap-2">
+                Start Writing <i class="fa-solid fa-arrow-right"></i>
+            </a>
+            <a href="/history" class="px-8 py-4 bg-white text-slate-700 font-bold rounded-xl border border-slate-200 hover:bg-slate-50 transition">
+                View History
+            </a>
         </div>
     </div>
 
-    <a href="/generate" class="btn btn-primary">Start Writing</a>
-</section>
+    <div class="max-w-6xl mx-auto px-4 pb-20">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition">
+                <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center text-xl mb-4">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </div>
+                <h3 class="font-bold text-lg text-slate-800 mb-2">Researcher</h3>
+                <p class="text-slate-500 text-sm">Scours the live web for facts, sources, and key technical details.</p>
+            </div>
 
-<section class="stats">
-    <h2>Your Writing Stats</h2>
-    <div class="stat-cards">
-        <div class="stat-card">
-            <h4>2</h4>
-            <p>Blogs Generated</p>
-        </div>
-        <div class="stat-card">
-            <h4>3,950</h4>
-            <p>Words Written</p>
-        </div>
-        <div class="stat-card">
-            <h4>~8.5 hrs</h4>
-            <p>Time Saved</p>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition">
+                <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center text-xl mb-4">
+                    <i class="fa-solid fa-list-check"></i>
+                </div>
+                <h3 class="font-bold text-lg text-slate-800 mb-2">Strategist</h3>
+                <p class="text-slate-500 text-sm">Builds a logical, SEO-friendly outline structure before writing begins.</p>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition">
+                <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center text-xl mb-4">
+                    <i class="fa-solid fa-pen-nib"></i>
+                </div>
+                <h3 class="font-bold text-lg text-slate-800 mb-2">Writer</h3>
+                <p class="text-slate-500 text-sm">Drafts comprehensive content with code examples and explanations.</p>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition">
+                <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center text-xl mb-4">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </div>
+                <h3 class="font-bold text-lg text-slate-800 mb-2">Editor</h3>
+                <p class="text-slate-500 text-sm">Polishes tone, fixes grammar, and ensures professional quality.</p>
+            </div>
         </div>
     </div>
-</section>
+
+    <div class="bg-slate-900 text-white py-16">
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <h2 class="text-2xl font-bold mb-12">System Performance</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <div class="text-4xl font-bold text-indigo-400 mb-2">Fast</div>
+                    <p class="text-slate-400">Average Generation Time</p>
+                    <p class="text-sm text-slate-500">~60 Seconds</p>
+                </div>
+                <div>
+                    <div class="text-4xl font-bold text-purple-400 mb-2">Free</div>
+                    <p class="text-slate-400">Powered by Gemini Flash</p>
+                    <p class="text-sm text-slate-500">Tier 1 Usage</p>
+                </div>
+                <div>
+                    <div class="text-4xl font-bold text-emerald-400 mb-2">Smart</div>
+                    <p class="text-slate-400">Live Web Access</p>
+                    <p class="text-sm text-slate-500">Via DuckDuckGo</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

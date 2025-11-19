@@ -3,28 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Blog AI Agent{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <title>{% block title %}Gemini Agent Team{% endblock %}</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <style>
+        /* Custom Animations */
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+        .animate-pulse-ring { animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        
+        /* Typography for the blog content */
+        .prose h1 { font-size: 2em; font-weight: bold; margin-top: 1em; margin-bottom: 0.5em; color: #1e293b; }
+        .prose h2 { font-size: 1.5em; font-weight: bold; margin-top: 1.2em; margin-bottom: 0.5em; color: #334155; }
+        .prose h3 { font-size: 1.25em; font-weight: bold; margin-top: 1em; color: #475569; }
+        .prose p { margin-bottom: 1em; line-height: 1.7; color: #334155; }
+        .prose ul { list-style-type: disc; padding-left: 1.5em; margin-bottom: 1em; }
+        .prose pre { background: #f1f5f9; padding: 1em; border-radius: 0.5em; overflow-x: auto; margin-bottom: 1em; }
+        .prose code { background: #e2e8f0; padding: 0.2em 0.4em; border-radius: 0.25em; font-size: 0.9em; }
+    </style>
 </head>
-<body>
-    <nav class="navbar glassnav">
-        <div class="container">
-            <a href="/" class="logo">Blog Agent</a>
-            <ul class="nav-menu">
-                <li><a href="/">Home</a></li>
-                <li><a href="/generate">Generate</a></li>
-                <li><a href="/history">History</a></li>
-            </ul>
+<body class="bg-slate-50 min-h-screen flex flex-col font-sans text-slate-800">
+
+    <nav class="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white">
+                    <i class="fa-solid fa-robot"></i>
+                </div>
+                <a href="/" class="font-bold text-xl tracking-tight text-slate-900">Gemini Agents</a>
+            </div>
+            
+            <div class="hidden md:flex items-center gap-6">
+                <a href="/" class="text-sm font-medium text-slate-600 hover:text-indigo-600 transition">Home</a>
+                <a href="/history" class="text-sm font-medium text-slate-600 hover:text-indigo-600 transition">History</a>
+                <a href="/generate" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-full hover:bg-indigo-700 transition shadow-md shadow-indigo-200">
+                    New Blog
+                </a>
+            </div>
         </div>
     </nav>
-    <div class="background-gradient"></div>
-    <main class="container">
+
+    <main class="flex-grow">
         {% block content %}{% endblock %}
     </main>
-    <footer class="footer glassnav">
-        <p>&copy; 2025 AI-Powered Blog Writing Agent. Built with <span style="color:#f4d35e;">&#10084;</span> and Gemini.</p>
+
+    <footer class="bg-white border-t border-slate-200 py-8 mt-12">
+        <div class="max-w-6xl mx-auto px-4 text-center text-slate-500 text-sm">
+            <p>&copy; 2025 AI Agent Team. Powered by Google Gemini.</p>
+        </div>
     </footer>
+
     {% block scripts %}{% endblock %}
 </body>
 </html>
