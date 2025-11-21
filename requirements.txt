@@ -1,7 +1,18 @@
-# Minimal setup for local development
+# Core Web Framework
 Flask==3.0.0
 Flask-CORS==4.0.0
+
+# Production Server (Crucial for Render)
+gunicorn==21.2.0
+
+# Environment Variables
 python-dotenv==1.0.0
 
-# Google Generative AI (for Gemini API)
-google-generativeai>=0.3.0
+# AI SDK (Updated for Gemini 1.5/2.0 models)
+google-generativeai>=0.8.3
+
+# Search Tool (Crucial for Research Agent)
+duckduckgo-search>=6.1.0
+
+# HTTP Request handling (Dependency for Search/AI)
+requests>=2.31.0
