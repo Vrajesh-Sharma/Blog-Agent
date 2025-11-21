@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}LekhAI{% endblock %}</title>
+    
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -17,14 +19,40 @@
         }
         .animate-pulse-ring { animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         
-        /* Typography for the blog content */
+        /* --- TYPOGRAPHY STYLES (Fixed Markers) --- */
+        
+        /* 1. Base Text Color */
+        .prose { color: #334155; }
+        
+        /* 2. Headings */
         .prose h1 { font-size: 2em; font-weight: bold; margin-top: 1em; margin-bottom: 0.5em; color: #1e293b; }
-        .prose h2 { font-size: 1.5em; font-weight: bold; margin-top: 1.2em; margin-bottom: 0.5em; color: #334155; }
-        .prose h3 { font-size: 1.25em; font-weight: bold; margin-top: 1em; color: #475569; }
+        .prose h2 { font-size: 1.5em; font-weight: bold; margin-top: 1.2em; margin-bottom: 0.5em; color: #1e293b; }
+        .prose h3 { font-size: 1.25em; font-weight: bold; margin-top: 1em; margin-bottom: 0.5em; color: #334155; }
+        .prose h4 { font-size: 1.1em; font-weight: bold; margin-top: 1em; margin-bottom: 0.5em; color: #334155; }
+
+        /* 3. Paragraphs */
         .prose p { margin-bottom: 1em; line-height: 1.7; color: #334155; }
+        
+        /* 4. Bold Text */
+        .prose strong { color: #0f172a; font-weight: 800; }
+        
+        /* 5. Lists & Markers (The Fix) */
         .prose ul { list-style-type: disc; padding-left: 1.5em; margin-bottom: 1em; }
-        .prose pre { background: #f1f5f9; padding: 1em; border-radius: 0.5em; overflow-x: auto; margin-bottom: 1em; }
-        .prose code { background: #e2e8f0; padding: 0.2em 0.4em; border-radius: 0.25em; font-size: 0.9em; }
+        .prose ol { list-style-type: decimal; padding-left: 1.5em; margin-bottom: 1em; }
+        .prose li { margin-bottom: 0.5em; color: #334155; }
+        
+        /* FORCE BULLETS & NUMBERS TO BE BLACK */
+        .prose li::marker {
+            color: #000000 !important; 
+            font-weight: bold;
+        }
+        
+        /* 6. Code Blocks */
+        .prose pre { background: #f1f5f9; padding: 1em; border-radius: 0.5em; overflow-x: auto; margin-bottom: 1em; border: 1px solid #e2e8f0; }
+        .prose code { background: #e2e8f0; padding: 0.2em 0.4em; border-radius: 0.25em; font-size: 0.9em; color: #db2777; font-family: monospace; }
+        
+        /* 7. Blockquotes */
+        .prose blockquote { border-left: 4px solid #cbd5e1; padding-left: 1em; color: #64748b; font-style: italic; background: #f8fafc; padding-top: 0.5em; padding-bottom: 0.5em; margin-bottom: 1em; }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen flex flex-col font-sans text-slate-800">
@@ -42,7 +70,7 @@
                 <a href="/" class="text-sm font-medium text-slate-600 hover:text-indigo-600 transition">Home</a>
                 <a href="/history" class="text-sm font-medium text-slate-600 hover:text-indigo-600 transition">History</a>
                 <a href="/generate" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-full hover:bg-indigo-700 transition shadow-md shadow-indigo-200">
-                    New Blog
+                    Generate
                 </a>
             </div>
         </div>
@@ -54,7 +82,7 @@
 
     <footer class="bg-[#0F172A] border-t border-slate-800 py-8">
         <div class="max-w-6xl mx-auto px-4 text-center text-slate-500 text-sm">
-            <p>&copy; 2025 Made with ❤️ by <a href="https://linkedin.com/in/vrajesharma-7-dsa" class="text-indigo-500 hover:text-indigo-600 transition">Vrajesh</a></p>
+            <p>&copy; 2025 Made with ❤️ by <a href="https://linkedin.com/in/vrajesharma-7-dsa" target="_blank" class="text-indigo-500 hover:text-indigo-600 transition">Vrajesh</a></p>
         </div>
     </footer>
 
