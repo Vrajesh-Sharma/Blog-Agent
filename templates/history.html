@@ -30,39 +30,37 @@
                     <tr class="hover:bg-slate-50 transition">
                         <td class="px-6 py-4">
                             <div class="font-bold text-slate-800">{{ blog.topic }}</div>
-                            <div class="text-xs text-slate-400">{{ blog.id[:8] }}...</div>
+                            <div class="text-xs text-slate-400 font-mono">{{ blog.id[:8] }}</div>
                         </td>
-                        <td class="px-6 py-4 text-sm text-slate-600">
+                        <td class="px-6 py-4 text-sm text-slate-600 whitespace-nowrap">
                             {{ blog.created_at[:10] }}
                         </td>
                         <td class="px-6 py-4">
                             {% if blog.status == 'complete' %}
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
-                                    Complete
-                                </span>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">Complete</span>
                             {% else %}
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-                                    {{ blog.status }}
-                                </span>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">{{ blog.status }}</span>
                             {% endif %}
                         </td>
-                        <td class="px-6 py-4 text-sm text-slate-500">
-                            {% if blog.final_blog %}
-                                {{ blog.final_blog|length // 5 }} words
+                        <td class="px-6 py-4 text-sm text-slate-500 whitespace-nowrap">
+                            {% if blog.word_count %}
+                                {{ blog.word_count }} words
                             {% else %}
                                 -
                             {% endif %}
                         </td>
                         <td class="px-6 py-4 text-right">
-                            <button class="text-indigo-600 hover:text-indigo-900 font-medium text-sm">View</button>
+                            <button onclick="viewBlog('{{ blog.id }}')" class="text-indigo-600 hover:text-indigo-900 font-medium text-sm transition">
+                                View
+                            </button>
                         </td>
                     </tr>
                     {% endfor %}
                 {% else %}
                     <tr>
                         <td colspan="5" class="px-6 py-12 text-center text-slate-400">
-                            <i class="fa-regular fa-folder-open text-4xl mb-3 opacity-50"></i>
-                            <p>No history found. Start generating!</p>
+                            <i class="fa-regular fa-folder-open text-3xl mb-3 opacity-30 block"></i>
+                            No history found. Start generating!
                         </td>
                     </tr>
                 {% endif %}
@@ -70,4 +68,53 @@
         </table>
     </div>
 </div>
+
+<div id="viewModal" class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center z-50 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+        <div class="p-6 border-b border-slate-200 flex justify-between items-center">
+            <h2 id="modalTitle" class="text-xl font-bold text-slate-800">Blog Content</h2>
+            <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+        </div>
+        <div class="p-8 overflow-y-auto prose max-w-none" id="modalContent">
+            <div class="flex justify-center py-12"><i class="fa-solid fa-circle-notch fa-spin text-3xl text-indigo-600"></i></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const modal = document.getElementById('viewModal');
+    const modalContent = document.getElementById('modalContent');
+    const modalTitle = document.getElementById('modalTitle');
+
+    async function viewBlog(sessionId) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        modalContent.innerHTML = '<div class="flex justify-center py-12"><i class="fa-solid fa-circle-notch fa-spin text-3xl text-indigo-600"></i></div>';
+        
+        try {
+            const res = await fetch(`/api/session/${sessionId}`);
+            const data = await res.json();
+            
+            modalTitle.innerText = data.topic || 'Blog Post';
+            
+            let cleanText = data.final_blog || '*No content available*';
+            if (typeof cleanText === 'object') cleanText = cleanText.result || JSON.stringify(cleanText);
+            cleanText = cleanText.replace(/^```markdown\n/, '').replace(/```$/, '');
+            
+            modalContent.innerHTML = marked.parse(cleanText);
+        } catch (e) {
+            modalContent.innerHTML = `<p class="text-red-500">Error loading blog: ${e}</p>`;
+        }
+    }
+
+    function closeModal() {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+    
+    // Close on background click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+</script>
 {% endblock %}
