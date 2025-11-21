@@ -6,10 +6,16 @@
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         <div class="lg:col-span-4 space-y-6">
+            
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-                    <i class="fa-solid fa-sliders text-indigo-600"></i> Configuration
-                </h2>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-sliders text-indigo-600"></i> Configuration
+                    </h2>
+                    <button onclick="resetSession()" class="text-xs text-slate-400 hover:text-red-500 font-medium transition" title="Clear current session">
+                        <i class="fa-solid fa-rotate-right"></i> Reset
+                    </button>
+                </div>
                 
                 <form id="generateForm" class="space-y-4">
                     <div>
@@ -22,18 +28,18 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-slate-700 mb-1">Tone</label>
-                            <select id="tone" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm">
-                                <option value="professional">Professional</option>
-                                <option value="technical">Technical</option>
-                                <option value="casual">Casual</option>
+                            <select id="tone" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                                <option value="Professional">Professional</option>
+                                <option value="Technical">Technical</option>
+                                <option value="Casual">Casual</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-slate-700 mb-1">Audience</label>
-                            <select id="audience" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm">
-                                <option value="developers">Developers</option>
-                                <option value="beginners">Beginners</option>
-                                <option value="managers">Managers</option>
+                            <select id="audience" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                                <option value="Developers">Developers</option>
+                                <option value="Beginner">Beginner</option>
+                                <option value="Managers">Managers</option>
                             </select>
                         </div>
                     </div>
@@ -46,9 +52,15 @@
                 </form>
             </div>
 
-            <div class="bg-slate-900 rounded-2xl p-4 shadow-lg border border-slate-700 h-64 flex flex-col">
+            <div class="bg-slate-900 rounded-2xl p-4 shadow-lg border border-slate-700 h-96 flex flex-col">
                 <div class="text-xs text-slate-500 font-bold uppercase tracking-wider mb-2 border-b border-slate-700 pb-2">System Logs</div>
-                <div id="console" class="flex-grow overflow-y-auto font-mono text-xs space-y-1 text-slate-300">
+                
+                <div id="console" class="flex-grow overflow-y-auto font-mono text-xs space-y-1 text-slate-300 
+                    [&::-webkit-scrollbar]:w-2
+                    [&::-webkit-scrollbar-track]:bg-transparent
+                    [&::-webkit-scrollbar-thumb]:bg-slate-700
+                    [&::-webkit-scrollbar-thumb]:rounded-full
+                    hover:[&::-webkit-scrollbar-thumb]:bg-slate-600">
                     <div class="text-emerald-500">> System ready.</div>
                 </div>
             </div>
@@ -97,9 +109,14 @@
                 <div id="resultArea" class="hidden">
                     <div class="flex justify-between items-center border-b border-slate-100 pb-4 mb-6">
                         <h2 class="text-2xl font-bold text-slate-800">Generated Content</h2>
-                        <button onclick="copyContent()" class="text-indigo-600 hover:bg-indigo-50 px-3 py-1 rounded-lg text-sm font-medium transition">
-                            <i class="fa-regular fa-copy mr-1"></i> Copy
-                        </button>
+                        <div class="flex gap-2">
+                             <button onclick="resetSession()" class="text-slate-500 hover:bg-slate-100 px-3 py-1 rounded-lg text-sm font-medium transition border border-slate-200">
+                                + New Blog
+                            </button>
+                            <button onclick="copyContent()" class="text-indigo-600 hover:bg-indigo-50 px-3 py-1 rounded-lg text-sm font-medium transition border border-transparent">
+                                <i class="fa-regular fa-copy mr-1"></i> Copy
+                            </button>
+                        </div>
                     </div>
                     <div id="blogContent" class="prose max-w-none"></div>
                 </div>
@@ -114,26 +131,74 @@
 <script>
     const consoleDiv = document.getElementById('console');
     const generateBtn = document.getElementById('generateBtn');
+    
+    // --- STATE MANAGEMENT ---
+    window.addEventListener('load', () => {
+        const savedState = localStorage.getItem('lekhai_state');
+        if (savedState) {
+            const state = JSON.parse(savedState);
+            restoreState(state);
+        }
+    });
 
-    // Helper to log to the UI console
+    function saveState(partialState) {
+        const existing = JSON.parse(localStorage.getItem('lekhai_state') || '{}');
+        const newState = { ...existing, ...partialState };
+        localStorage.setItem('lekhai_state', JSON.stringify(newState));
+    }
+
+    function restoreState(state) {
+        if (state.topic) document.getElementById('topic').value = state.topic;
+        if (state.tone) document.getElementById('tone').value = state.tone;
+        if (state.audience) document.getElementById('audience').value = state.audience;
+        
+        if (state.logs) {
+            consoleDiv.innerHTML = state.logs;
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+
+        if (state.status === 'processing' || state.status === 'complete') {
+            document.getElementById('initialState').style.display = 'none';
+        }
+
+        if (state.status === 'processing') {
+             generateBtn.disabled = true;
+             generateBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Agents Working...';
+        }
+
+        if (state.finalContent) {
+            document.getElementById('resultArea').classList.remove('hidden');
+            document.getElementById('blogContent').innerHTML = marked.parse(state.finalContent);
+            updateCard('research', 'complete');
+            updateCard('outline', 'complete');
+            updateCard('writing', 'complete');
+            updateCard('editing', 'complete');
+            generateBtn.innerHTML = 'Regenerate';
+        }
+    }
+
+    function resetSession() {
+        localStorage.removeItem('lekhai_state');
+        window.location.reload();
+    }
+
+    // --- LOGGING ---
     function log(msg, type='info') {
         const div = document.createElement('div');
         const time = new Date().toLocaleTimeString().split(' ')[0];
-        
         if (type === 'error') div.className = 'text-red-400';
         else if (type === 'success') div.className = 'text-emerald-400';
-        else if (type === 'system') div.className = 'text-slate-400 italic';
-        
+        else div.className = 'text-slate-400 italic';
         div.innerHTML = `<span class="opacity-30 mr-2">[${time}]</span> ${msg}`;
         consoleDiv.appendChild(div);
         consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        
+        saveState({ logs: consoleDiv.innerHTML });
     }
 
-    // Helper to update agent cards
     function updateCard(stage, status) {
         const card = document.getElementById(`card-${stage}`);
         if (!card) return;
-
         if (status === 'active') {
             card.classList.remove('opacity-50');
             card.classList.add('ring-2', 'ring-indigo-500', 'shadow-md', 'scale-105');
@@ -153,7 +218,13 @@
         const tone = document.getElementById('tone').value;
         const audience = document.getElementById('audience').value;
 
-        // Reset UI
+        saveState({ 
+            topic, tone, audience, 
+            status: 'processing', 
+            logs: '<div class="text-emerald-500">> System ready.</div>' 
+        });
+
+        document.getElementById('console').innerHTML = '<div class="text-emerald-500">> System ready.</div>';
         document.getElementById('initialState').style.display = 'none';
         document.getElementById('resultArea').classList.add('hidden');
         generateBtn.disabled = true;
@@ -172,20 +243,25 @@
 
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
+            let buffer = '';
 
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
                 
-                const chunk = decoder.decode(value);
-                const lines = chunk.split('\n');
+                buffer += decoder.decode(value, {stream: true});
+                const parts = buffer.split('\n\n');
+                buffer = parts.pop();
                 
-                for (const line of lines) {
-                    if (line.startsWith('data: ')) {
-                        try {
-                            const data = JSON.parse(line.slice(6));
-                            handleEvent(data);
-                        } catch (e) { console.log('Parse error', e); }
+                for (const part of parts) {
+                    const lines = part.split('\n');
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const data = JSON.parse(line.slice(6));
+                                await handleEvent(data);
+                            } catch (e) { console.log('Ignore parse error'); }
+                        }
                     }
                 }
             }
@@ -196,7 +272,7 @@
         }
     });
 
-    function handleEvent(data) {
+    async function handleEvent(data) {
         switch(data.event) {
             case 'stage_start':
                 log(`> Agent Activated: ${data.stage.toUpperCase()}`);
@@ -209,7 +285,8 @@
                 break;
 
             case 'outline_complete':
-                log(`Outline generated: "${data.data.outline?.title || 'Untitled'}"`, 'success');
+                const title = data.data.outline?.title || data.data.title || 'Untitled';
+                log(`Outline generated: "${title}"`, 'success');
                 updateCard('outline', 'complete');
                 break;
 
@@ -219,22 +296,28 @@
                 break;
 
             case 'complete':
-                log(`🎉 Workflow Complete! Word count: ${data.metrics.word_count}`, 'success');
+                log(`🎉 Workflow Complete! Fetching final content...`, 'success');
                 updateCard('editing', 'complete');
                 
-                // Render Result
-                const rawText = typeof data.final_blog_preview === 'string' 
-                    ? data.final_blog_preview 
-                    : JSON.stringify(data.final_blog_preview);
-                
-                // Clean markdown format
-                const cleanText = rawText.replace(/^```markdown\n/, '').replace(/```$/, '');
-                
-                document.getElementById('blogContent').innerHTML = marked.parse(cleanText);
-                document.getElementById('resultArea').classList.remove('hidden');
-                
+                try {
+                    const res = await fetch(`/api/session/${data.session_id}`);
+                    const sessionData = await res.json();
+                    
+                    let cleanText = sessionData.final_blog;
+                    if (typeof cleanText === 'object') cleanText = cleanText.result || JSON.stringify(cleanText);
+                    cleanText = cleanText.replace(/^```markdown\n/, '').replace(/```$/, '');
+                    
+                    document.getElementById('blogContent').innerHTML = marked.parse(cleanText);
+                    document.getElementById('resultArea').classList.remove('hidden');
+                    
+                    saveState({ status: 'complete', finalContent: cleanText });
+
+                } catch (e) {
+                    log(`Failed to load content: ${e}`, 'error');
+                }
+
                 generateBtn.disabled = false;
-                generateBtn.innerHTML = 'Start New Session';
+                generateBtn.innerHTML = 'Regenerate';
                 break;
                 
             case 'error':

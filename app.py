@@ -112,7 +112,7 @@ def generate_blog():
             sessions[session_id]['stages'].append('research')
             print(f"🏁 [Coordinator] Research Complete.")
             yield sse_packet({'event': 'research_complete', 'stage': 'research', 'data': research_result, 'progress': 25}, event='research_complete')
-            print(f"    ⏳ [Coordinator] Cooling down (5s) to avoid Rate Limit...")
+            print(f"    ⏳ [Coordinator] Cooling down (10s) to avoid Rate Limit...")
             time.sleep(10)  # Cooldown to avoid rate limits
         except Exception as e:
             print(f"💥 [Coordinator] Error in Research: {e}")
@@ -135,7 +135,7 @@ def generate_blog():
             sessions[session_id]['stages'].append('outline')
             print(f"🏁 [Coordinator] Outline Complete.")
             yield sse_packet({'event': 'outline_complete', 'stage': 'outline', 'data': outline_result, 'progress': 50}, event='outline_complete')
-            print(f"    ⏳ [Coordinator] Cooling down (5s) to avoid Rate Limit...")
+            print(f"    ⏳ [Coordinator] Cooling down (10s) to avoid Rate Limit...")
             time.sleep(10)
         except Exception as e:
             print(f"💥 [Coordinator] Error in Outline: {e}")
@@ -156,7 +156,7 @@ def generate_blog():
             sessions[session_id]['stages'].append('writing')
             print(f"🏁 [Coordinator] Writing Complete.")
             yield sse_packet({'event': 'writing_complete', 'stage': 'writing', 'data': {'content_preview': str(writing_result)[:800]}, 'progress': 75}, event='writing_complete')
-            print(f"    ⏳ [Coordinator] Cooling down (5s) to avoid Rate Limit...")
+            print(f"    ⏳ [Coordinator] Cooling down (10s) to avoid Rate Limit...")
             time.sleep(10)
         except Exception as e:
             print(f"💥 [Coordinator] Error in Writing: {e}")
@@ -172,7 +172,12 @@ def generate_blog():
                 "preferences": preferences
             }, session_ref, memory_ref)
             
+            # Calculate metrics FIRST
+            word_count = len(str(editing_result).split())
+            
+            # Save to Session (Crucial for History Page)
             sessions[session_id]['final_blog'] = editing_result
+            sessions[session_id]['word_count'] = word_count  # <--- NEW LINE
             sessions[session_id]['status'] = 'complete'
             sessions[session_id]['stages'].append('editing')
             
@@ -180,15 +185,19 @@ def generate_blog():
             start_time = datetime.fromisoformat(sessions[session_id]['created_at'])
             end_time = datetime.now(timezone.utc)
             duration = (end_time - start_time).total_seconds()
-            
-            print(f"🏁 [Coordinator] Session Finished in {duration:.2f}s.")
-            
             metrics = {
-                'word_count': len(str(editing_result).split()),
+                'word_count': word_count,
                 'stages_completed': sessions[session_id]['stages'],
                 'duration_seconds': duration
             }
-            yield sse_packet({'event': 'complete', 'stage': 'editing', 'session_id': session_id, 'status': 'complete', 'final_blog_preview': str(editing_result), 'progress': 100, 'metrics': metrics}, event='complete')
+            yield sse_packet({
+                'event': 'complete', 
+                'stage': 'editing', 
+                'session_id': session_id,
+                'status': 'complete', 
+                'progress': 100, 
+                'metrics': metrics
+            }, event='complete')
         except Exception as e:
             print(f"💥 [Coordinator] Error in Editing: {e}")
             yield sse_packet({'event': 'error', 'stage': 'editing', 'error': str(e)}, event='error')
