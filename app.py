@@ -113,7 +113,7 @@ def generate_blog():
             print(f"🏁 [Coordinator] Research Complete.")
             yield sse_packet({'event': 'research_complete', 'stage': 'research', 'data': research_result, 'progress': 25}, event='research_complete')
             print(f"    ⏳ [Coordinator] Cooling down (5s) to avoid Rate Limit...")
-            time.sleep(5)  # Cooldown to avoid rate limits
+            time.sleep(10)  # Cooldown to avoid rate limits
         except Exception as e:
             print(f"💥 [Coordinator] Error in Research: {e}")
             yield sse_packet({'event': 'error', 'stage': 'research', 'error': str(e)}, event='error')
@@ -136,7 +136,7 @@ def generate_blog():
             print(f"🏁 [Coordinator] Outline Complete.")
             yield sse_packet({'event': 'outline_complete', 'stage': 'outline', 'data': outline_result, 'progress': 50}, event='outline_complete')
             print(f"    ⏳ [Coordinator] Cooling down (5s) to avoid Rate Limit...")
-            time.sleep(5)
+            time.sleep(10)
         except Exception as e:
             print(f"💥 [Coordinator] Error in Outline: {e}")
             yield sse_packet({'event': 'error', 'stage': 'outline', 'error': str(e)}, event='error')
@@ -157,7 +157,7 @@ def generate_blog():
             print(f"🏁 [Coordinator] Writing Complete.")
             yield sse_packet({'event': 'writing_complete', 'stage': 'writing', 'data': {'content_preview': str(writing_result)[:800]}, 'progress': 75}, event='writing_complete')
             print(f"    ⏳ [Coordinator] Cooling down (5s) to avoid Rate Limit...")
-            time.sleep(5)
+            time.sleep(10)
         except Exception as e:
             print(f"💥 [Coordinator] Error in Writing: {e}")
             yield sse_packet({'event': 'error', 'stage': 'writing', 'error': str(e)}, event='error')

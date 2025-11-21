@@ -1,6 +1,8 @@
 # agents/agent_base.py
 import google.generativeai as genai
 import json
+import time
+import random
 
 class BaseAgent:
     def __init__(self, name, model_name, system_instruction, tools=None, response_mime_type=None):
@@ -21,7 +23,7 @@ class BaseAgent:
 
     def act(self, inputs, session_ref=None, memory_ref=None):
         """
-        Executes the agent's task using a Chat Session to enable automatic tool use.
+        Executes the agent's task with Automatic Retry Logic for Rate Limits.
         """
         print(f"\n🤖 [{self.name}] ACTIVATED")
         
@@ -29,42 +31,55 @@ class BaseAgent:
         prompt = f"Task Context: {json.dumps(inputs, default=str)}"
         print(f"    └─ Input Context: {str(inputs)[:100]}...")
 
-        try:
-            print(f"    └─ Processing (Tools Enabled)...")
-            
-            # --- THE FIX IS HERE ---
-            # We start a chat session with automatic function calling enabled.
-            # This allows the SDK to execute the tools (like google_search) 
-            # automatically when the model asks for them.
-            chat = self.model.start_chat(enable_automatic_function_calling=True)
-            
-            response = chat.send_message(
-                prompt,
-                generation_config=self.generation_config
-            )
-            
-            # Get the final text result after tools have run
-            result = response.text
-            
-            # Log success
-            preview = str(result).replace('\n', ' ')[:80]
-            print(f"✅ [{self.name}] COMPLETED. Result: {preview}...")
+        # --- RETRY LOGIC ---
+        max_retries = 3
+        base_delay = 15 # Start with 15 seconds wait if error occurs
 
-            # specific logic for Research/Outline to ensure the app gets the Dict it expects
-            # (Since we disabled strict JSON mode for agents with tools, we try to parse manually)
-            if "{" in result and "}" in result:
-                try:
-                    # Find the first '{' and last '}' to extract JSON if there's extra text
-                    start = result.find("{")
-                    end = result.rfind("}") + 1
-                    json_str = result[start:end]
-                    return json.loads(json_str)
-                except json.JSONDecodeError:
-                    pass # Fallback to returning text if parsing fails
-            
-            return result
+        for attempt in range(max_retries):
+            try:
+                if attempt > 0:
+                    print(f"    └─ Attempt {attempt + 1} of {max_retries}...")
 
-        except Exception as e:
-            print(f"❌ [{self.name}] ERROR: {e}")
-            # Return a structured error so the frontend doesn't just break silently
-            return {"error": str(e)}
+                print(f"    └─ Processing (Tools Enabled)...")
+                
+                # Start chat with auto-function calling
+                chat = self.model.start_chat(enable_automatic_function_calling=True)
+                
+                response = chat.send_message(
+                    prompt,
+                    generation_config=self.generation_config
+                )
+                
+                result = response.text
+                
+                # Log success
+                preview = str(result).replace('\n', ' ')[:80]
+                print(f"✅ [{self.name}] COMPLETED. Result: {preview}...")
+
+                # Manual JSON Parsing
+                if "{" in result and "}" in result:
+                    try:
+                        start = result.find("{")
+                        end = result.rfind("}") + 1
+                        json_str = result[start:end]
+                        return json.loads(json_str)
+                    except json.JSONDecodeError:
+                        pass # Fallback to returning text
+                
+                return result
+
+            except Exception as e:
+                error_str = str(e)
+                # Check for Rate Limit (429) or Quota errors
+                if "429" in error_str or "Quota exceeded" in error_str:
+                    wait_time = base_delay * (2 ** attempt) + random.uniform(1, 5)
+                    print(f"    ⚠️ [{self.name}] Rate Limit Hit! Cooling down for {wait_time:.1f}s...")
+                    time.sleep(wait_time)
+                    # Loop continues to next attempt...
+                else:
+                    # Real error (not rate limit) -> Crash immediately
+                    print(f"❌ [{self.name}] ERROR: {e}")
+                    return {"error": str(e)}
+        
+        # If loop finishes without success
+        return {"error": "Operation failed after max retries due to Rate Limits."}
